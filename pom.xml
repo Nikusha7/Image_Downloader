@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ge.tsu</groupId>
+    <artifactId>Image-Downloader</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <jsoup.version>1.16.1</jsoup.version>
+        <log4j.version>2.20.0</log4j.version>
+        <maven-assembly-plugin.version>3.5.0</maven-assembly-plugin.version>
+        <main.class>ge.tsu.Launcher</main.class>
+    </properties>
+
+    <dependencies>
+        <!-- jsoup -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+        </dependency>
+        <!-- log4j -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <!-- The Maven Assembly Plugin helps in creating binary distributions or assemblies of your project.
+                It allows you to package your project's output along with its dependencies,
+                resources, and configuration files into a single, executable JAR file or a ZIP file. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven-assembly-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!--the <id> tag is used to provide an identifier for the plugin execution-->
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <!-- the single goal is used to create a single, standalone assembly file that includes all the project dependencies and resources.
+                            It packages everything into a single archive, making it convenient for distribution and deployment purposes.
+                            The resulting assembly can be in various formats, such as ZIP, TAR, or JAR, depending on the configuration.
+                            -->
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
