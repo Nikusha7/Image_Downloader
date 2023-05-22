@@ -64,6 +64,7 @@
                     <execution>
                         <!--the <id> tag is used to provide an identifier for the plugin execution-->
                         <id>make-assembly</id>
+                        <!-- binding to the packaging phase (this plugin will run on packaging phase) -->
                         <phase>package</phase>
                         <goals>
                             <!-- the single goal is used to create a single, standalone assembly file that includes all the project dependencies and resources.

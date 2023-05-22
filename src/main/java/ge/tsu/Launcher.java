@@ -1,5 +1,8 @@
 package ge.tsu;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,14 +13,24 @@ import java.nio.file.Paths;
 
 
 public class Launcher {
+    private static final Logger log = LogManager.getLogger(Launcher.class);
+
     public static void main(String[] args) {
+        log.debug("Application has started! ");
+        if (args.length < 2) {
+            log.error("Application usage: app [url] [download-folder-path]");
+            return;
+        }
 
         URL url = getUrl(args[0]);
         Path downloadFolder = getDownloadFolder(args[1]);
 
-
-        ImageDownloader imageDownloader = new ImageDownloader(url, downloadFolder);
-        imageDownloader.run();
+        try {
+            ImageDownloader imageDownloader = new ImageDownloader(url, downloadFolder);
+            imageDownloader.run();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
     }
 

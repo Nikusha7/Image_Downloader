@@ -1,6 +1,7 @@
 package ge.tsu;
 
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,13 +13,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/*
+ * Image downloader class that requires URL and download folder path.
+ * Application uses JSoup library to parse root page, find images and download them.
+ */
 public class ImageDownloader implements Runnable {
-    /**
-     * Image downloader class that requires URL and download folders. It uses JSoup library to parse root page,
-     * find images and download them.
-     *
-     * @author
-     */
+    private static final Logger log = LogManager.getLogger(ImageDownloader.class);
 
     //Website url from where images will be downloaded
     private final URL url;
@@ -57,12 +57,12 @@ public class ImageDownloader implements Runnable {
         for (Element imageElement : imageElements) {
             //Getting img elements absolute source URLs
             String imageDownloadAbsUrl = imageElement.absUrl("src");
-
+            log.info(String.format("Downloading image: " + imageDownloadAbsUrl));
             String imageFileName = getImageFilename(imageDownloadAbsUrl);
             try {
                 downloadImage(imageFileName, imageDownloadAbsUrl);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
 
@@ -128,28 +128,6 @@ public class ImageDownloader implements Runnable {
         */
         Files.write(downloadImageFile, response.bodyAsBytes());
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
