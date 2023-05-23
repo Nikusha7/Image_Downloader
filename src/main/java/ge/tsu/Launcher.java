@@ -5,12 +5,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.net.URI;
 import java.nio.file.Paths;
-
 
 public class Launcher {
     private static final Logger log = LogManager.getLogger(Launcher.class);
@@ -31,7 +30,7 @@ public class Launcher {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-
+        log.debug("Application finished! ");
     }
 
     private static URL getUrl(String urlString) {

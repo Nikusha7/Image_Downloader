@@ -10,8 +10,10 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 /*
  * Image downloader class that requires URL and download folder path.
@@ -57,10 +59,10 @@ public class ImageDownloader implements Runnable {
         for (Element imageElement : imageElements) {
             //Getting img elements absolute source URLs
             String imageDownloadAbsUrl = imageElement.absUrl("src");
-            log.info(String.format("Downloading image: " + imageDownloadAbsUrl));
-            String imageFileName = getImageFilename(imageDownloadAbsUrl);
+            log.info(String.format("Downloading image: %s", imageDownloadAbsUrl));
+            // String imageFileName = getImageFilename(imageDownloadAbsUrl);
             try {
-                downloadImage(imageFileName, imageDownloadAbsUrl);
+                downloadImage(getImageFilename(imageDownloadAbsUrl), imageDownloadAbsUrl);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
@@ -87,7 +89,45 @@ public class ImageDownloader implements Runnable {
         The substring() method then extracts the substring starting from index 30 until the end of the input URL string,
         which is "puppy.jpg".
          */
-        return imageDownloadUrl.substring(imageDownloadUrl.lastIndexOf("/") + 1);
+        String fileName = imageDownloadUrl.substring(imageDownloadUrl.lastIndexOf("/") + 1);
+
+        /*
+        If fileName has no extension it means that extension was not specified in the url. So fileName only contains name of image.
+        We will get extension from the following code, then check if it's a real extension and append it to fileName
+        Result will be something like that "imageName.extension"  (e.g., "puppy.jpeg")"
+        */
+        Set<String> imageExtensions = Set.of("jpg", "jpeg", "png", "gif", "bmp", "tiff", "raw", "jp2", "svg", "psd", "eps", "heif");
+
+        String extension = getExtension(fileName);
+        boolean nameHasExtension = imageExtensions.contains(extension.toLowerCase());
+
+        if (!nameHasExtension) {
+            URL url = null;
+            try {
+                url = new URL(imageDownloadUrl);
+                URLConnection connection = url.openConnection();
+                String contentType = connection.getContentType();
+                if (contentType != null && contentType.startsWith("image/")) {
+                    String imageType = contentType.substring("image/".length());
+                    return fileName + "." + imageType;
+                } else {
+                    log.debug("url does not point to an image");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return fileName;
+    }
+
+    //returns extension in lowercase, if fileName has no extension returns nothing
+    private String getExtension(String fileName) {
+
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+            return fileName.substring(dotIndex + 1).toLowerCase();
+        }
+        return "";
     }
 
     /**
@@ -98,6 +138,7 @@ public class ImageDownloader implements Runnable {
      * @throws IOException
      */
     public void downloadImage(String fileName, String url) throws IOException {
+        log.debug("downloadImage method invoked! \nFileName: " + fileName + " \nURL: " + url);
         /*
         * .ignoreContentType(true) - This method tells Jsoup to ignore the content type of the response and treat it as a plain string.
         By default, Jsoup checks the content type of the response and tries to parse it as HTML.
@@ -107,13 +148,28 @@ public class ImageDownloader implements Runnable {
         status code, and response body.
          */
         Response response = Jsoup.connect(url).ignoreContentType(true).execute();
+        log.debug("Response worked: ");
+         /*
+        We are receiving fileName which might contain illegal characters such as "?", it's okay for the name but not for the path.
+        So we are replacing such characters with safe character (e.g., underscore "_")
+         */
+        String illegalChars = "?";
+        StringBuilder sanitizedPath = new StringBuilder();
+        for (char c : fileName.toCharArray()) {
+            if (illegalChars.indexOf(c) == -1) {
+                sanitizedPath.append(c);
+            } else {
+                sanitizedPath.append("_");
+            }
+        }
+
         /*
         .resolve(fileName) - This method is called on the downloadFolder object and creates a new Path object
         that represents the path to the downloaded image file.
         The fileName parameter is a String value that represents the name of the downloaded image file.
         */
-        Path downloadImageFile = downloadFolder.resolve(fileName);
-
+        Path downloadImageFile = downloadFolder.resolve(String.valueOf(sanitizedPath));
+        log.debug("downloadImageFile worked, Path: " + downloadImageFile);
         /*
         * downloadImageFile - This is a Path object that represents the path to the downloaded image file.
         * response.bodyAsBytes() - This method call retrieves the response body as a byte array.
@@ -127,6 +183,7 @@ public class ImageDownloader implements Runnable {
         After the method completes, the image data is written to the file, and the file is saved to disk.
         */
         Files.write(downloadImageFile, response.bodyAsBytes());
+        log.debug("Files write worked");
     }
 
 
