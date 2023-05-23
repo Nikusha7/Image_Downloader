@@ -60,7 +60,6 @@ public class ImageDownloader implements Runnable {
             //Getting img elements absolute source URLs
             String imageDownloadAbsUrl = imageElement.absUrl("src");
             log.info(String.format("Downloading image: %s", imageDownloadAbsUrl));
-            // String imageFileName = getImageFilename(imageDownloadAbsUrl);
             try {
                 downloadImage(getImageFilename(imageDownloadAbsUrl), imageDownloadAbsUrl);
             } catch (IOException e) {
@@ -138,7 +137,7 @@ public class ImageDownloader implements Runnable {
      * @throws IOException
      */
     public void downloadImage(String fileName, String url) throws IOException {
-        log.debug("downloadImage method invoked! \nFileName: " + fileName + " \nURL: " + url);
+        log.debug(String.format("FileName: %s", fileName));
         /*
         * .ignoreContentType(true) - This method tells Jsoup to ignore the content type of the response and treat it as a plain string.
         By default, Jsoup checks the content type of the response and tries to parse it as HTML.
@@ -148,7 +147,6 @@ public class ImageDownloader implements Runnable {
         status code, and response body.
          */
         Response response = Jsoup.connect(url).ignoreContentType(true).execute();
-        log.debug("Response worked: ");
          /*
         We are receiving fileName which might contain illegal characters such as "?", it's okay for the name but not for the path.
         So we are replacing such characters with safe character (e.g., underscore "_")
@@ -169,7 +167,6 @@ public class ImageDownloader implements Runnable {
         The fileName parameter is a String value that represents the name of the downloaded image file.
         */
         Path downloadImageFile = downloadFolder.resolve(String.valueOf(sanitizedPath));
-        log.debug("downloadImageFile worked, Path: " + downloadImageFile);
         /*
         * downloadImageFile - This is a Path object that represents the path to the downloaded image file.
         * response.bodyAsBytes() - This method call retrieves the response body as a byte array.
@@ -183,7 +180,7 @@ public class ImageDownloader implements Runnable {
         After the method completes, the image data is written to the file, and the file is saved to disk.
         */
         Files.write(downloadImageFile, response.bodyAsBytes());
-        log.debug("Files write worked");
+        log.debug("Image downloaded!");
     }
 
 
